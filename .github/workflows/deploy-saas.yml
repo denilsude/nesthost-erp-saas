@@ -1,0 +1,31 @@
+name: Deploy SaaS (api, app, wildcard)
+
+on:
+  push:
+    branches:
+      - main # Ou a branch que você usar como principal
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted # Diz ao GitHub: rode no MEU servidor
+
+    steps:
+      - name: 1. Baixar o código (Checkout)
+        uses: actions/checkout@v4
+
+      - name: 2. Construir e Iniciar os Containers
+        run: |
+          echo "Iniciando build e deploy do SaaS..."
+          # O --build força o Docker a reconstruir as imagens (backend/frontend)
+          # O -d inicia em modo detached
+          # Precisamos estar na pasta certa que contém o docker-compose.yml
+          cd $GITHUB_WORKSPACE 
+          docker compose up --build -d
+
+      - name: 3. Limpar Imagens Antigas (Opcional)
+        run: |
+          echo "Limpando imagens Docker não utilizadas..."
+          docker image prune -f
+
+      - name: 4. Fim do Deploy
+        run: echo "Deploy do SaaS concluído!"
