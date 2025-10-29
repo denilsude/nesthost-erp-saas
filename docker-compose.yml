@@ -7,14 +7,14 @@ services:
     container_name: saas_postgres_db
     restart: always
     environment:
-      # Puxa as variáveis do arquivo .env na pasta 'backend'
+      # Puxa as variáveis do .env na RAIZ (automático)
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_saas_data:/var/lib/postgresql/data
     networks:
-      - saas_network # Conecta à nossa rede interna
+      - saas_network 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
@@ -24,28 +24,26 @@ services:
   # --- 2. Backend (API Node.js) ---
   backend:
     build:
-      context: ./backend # Onde encontrar o Dockerfile do backend
+      context: ./backend 
     container_name: saas_backend_api
     restart: always
     env_file:
-      - ./backend/.env # Carrega as variáveis (PORT, JWT_SECRET, etc)
+      - ./.env # <-- CORREÇÃO: Aponta para o .env na RAIZ
     ports:
-      # Expõe a porta 3001 do host para o Túnel acessar
       - "127.0.0.1:3001:3001" 
     networks:
       - saas_network
     depends_on:
       db:
-        condition: service_healthy # Espera o banco ficar pronto
+        condition: service_healthy 
 
   # --- 3. Frontend (React/Nginx) ---
   frontend:
     build:
-      context: ./frontend # Onde encontrar o Dockerfile do frontend
+      context: ./frontend 
     container_name: saas_frontend_app
     restart: always
     ports:
-      # Expõe a porta 8080 do host para o Túnel acessar
       - "127.0.0.1:8080:80" 
     networks:
       - saas_network
@@ -54,7 +52,7 @@ services:
 
 volumes:
   postgres_saas_data:
-    name: nesthost_saas_pgdata # Nome fixo para o volume do banco
+    name: nesthost_saas_pgdata 
 
 networks:
   saas_network:

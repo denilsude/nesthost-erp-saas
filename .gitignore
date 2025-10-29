@@ -11,7 +11,6 @@ pnpm-debug.log
 # Arquivos de Ambiente (MUITO IMPORTANTE)
 # Nunca envie segredos para o GitHub!
 .env
-backend/.env
 
 # Arquivos de OS (Mac/Windows)
 .DS_Store
