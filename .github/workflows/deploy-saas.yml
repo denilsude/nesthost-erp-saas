@@ -3,29 +3,34 @@ name: Deploy SaaS (api, app, wildcard)
 on:
   push:
     branches:
-      - main # Ou a branch que você usar como principal
+      - main # Garante que o deploy só rode em pushs para a 'main'
 
 jobs:
   build-and-deploy:
-    runs-on: self-hosted # Diz ao GitHub: rode no MEU servidor
+    runs-on: self-hosted # Usa o nosso runner 'pentecost'
+    
+    # Injeta os segredos do GitHub no ambiente do runner
+    env:
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
     steps:
       - name: 1. Baixar o código (Checkout)
         uses: actions/checkout@v4
 
-      - name: 2. Construir e Iniciar os Containers
-        run: |
-          echo "Iniciando build e deploy do SaaS..."
-          # O --build força o Docker a reconstruir as imagens (backend/frontend)
-          # O -d inicia em modo detached
-          # Precisamos estar na pasta certa que contém o docker-compose.yml
-          cd $GITHUB_WORKSPACE 
-          docker compose up --build -d
+      - name: 2. Garantir que estamos no diretório correto
+        run: cd $GITHUB_WORKSPACE 
 
-      - name: 3. Limpar Imagens Antigas (Opcional)
-        run: |
-          echo "Limpando imagens Docker não utilizadas..."
-          docker image prune -f
+      - name: 3. Parar containers antigos (se existirem)
+        run: docker compose down
 
-      - name: 4. Fim do Deploy
+      - name: 4. Construir e Iniciar novos containers
+        run: docker compose up --build -d
+
+      - name: 5. Limpar Imagens Antigas
+        run: docker image prune -f
+
+      - name: 6. Fim do Deploy
         run: echo "Deploy do SaaS concluído!"
