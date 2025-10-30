@@ -27,8 +27,6 @@ services:
       context: ./backend 
     container_name: saas_backend_api
     restart: always
-    env_file:
-      - ./.env # <-- CORREÇÃO: Aponta para o .env na RAIZ
     ports:
       - "127.0.0.1:3001:3001" 
     networks:
