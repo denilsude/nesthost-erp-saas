@@ -7,6 +7,11 @@ RUN npm install
 COPY . .
 
 # --- CORREÇÃO ESTÁ AQUI ---
+# 1. Aceita o DATABASE_URL como um argumento de build
+ARG DATABASE_URL
+# 2. Expõe esse argumento como uma ENV *apenas* para o npx prisma generate
+ENV DATABASE_URL=$DATABASE_URL
+
 # Constrói o cliente Prisma baseado no schema.prisma
 RUN npx prisma generate
 

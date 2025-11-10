@@ -1,4 +1,4 @@
-version: "3.9" # (Opcional, mas boa prática)
+version: "3.9"
 
 services:
   # --- BANCO DE DADOS ---
@@ -6,8 +6,6 @@ services:
     image: postgres:15
     container_name: saas_postgres_db
     restart: unless-stopped
-    # As variáveis de ambiente (POSTGRES_USER, etc.) 
-    # são injetadas pelo GitHub Actions (env: no deploy.yml)
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -23,7 +21,12 @@ services:
   # --- BACKEND (API) ---
   backend:
     build:
-      context: ./backend # (Assume que o Dockerfile está na pasta ./backend)
+      context: ./backend
+      # --- CORREÇÃO ESTÁ AQUI ---
+      # Passa a variável ${DATABASE_URL} (lida do .env) 
+      # para dentro do build como um argumento (ARG)
+      args:
+        - DATABASE_URL=${DATABASE_URL}
     container_name: saas_backend_api
     restart: unless-stopped
     depends_on:
@@ -32,21 +35,15 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL}
     ports:
-      # --- CORREÇÃO ESTÁ AQUI ---
-      # Removemos "127.0.0.1:"
-      # Agora ele escuta em 0.0.0.0:3001, permitindo a conexão do Cloudflare.
       - "3001:3001"
 
   # --- FRONTEND (APP) ---
   frontend:
     build:
-      context: ./frontend # (Assume que o Dockerfile está na pasta ./frontend)
+      context: ./frontend
     container_name: saas_frontend_app
     restart: unless-stopped
     ports:
-      # --- CORREÇÃO ESTÁ AQUI ---
-      # Removemos "127.0.0.1:"
-      # Agora ele escuta em 0.0.0.0:80, permitindo a conexão do Cloudflare.
       - "8080:80"
 
 volumes:
