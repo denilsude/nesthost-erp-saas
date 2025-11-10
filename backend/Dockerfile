@@ -13,9 +13,9 @@ FROM node:20-alpine
 WORKDIR /app
 COPY --from=build /app .
 # Instala SOMENTE dependências de produção
-RUN npm ci --omit=dev 
+RUN npm ci --omit=dev
 
 # Expõe a porta 3001 (definida no .env)
 EXPOSE 3001
 # Comando para iniciar o servidor
-CMD [ "node", "server.js" ]
+CMD [ "npm", "start" ]
