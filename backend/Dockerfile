@@ -5,6 +5,11 @@ COPY package*.json ./
 # Instala TODAS as dependências
 RUN npm install
 COPY . .
+
+# --- CORREÇÃO ESTÁ AQUI ---
+# Constrói o cliente Prisma baseado no schema.prisma
+RUN npx prisma generate
+
 # Se você usar TypeScript, descomente a linha abaixo:
 # RUN npm run build
 

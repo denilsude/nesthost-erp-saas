@@ -1,8 +1,9 @@
 {
+  "type": "module",
   "name": "nesthost-backend",
   "version": "1.0.0",
   "description": "API do NestHost ERP",
-"main": "src/server.js",
+  "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
     "dev": "node src/server.js"
