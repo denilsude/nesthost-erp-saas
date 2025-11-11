@@ -17,11 +17,10 @@ RUN npm ci --omit=dev
 
 # Copia o código-fonte
 COPY --from=build /app/src ./src
-COPY --from=build /app/.env ./
 COPY --from=build /app/package.json ./package.json
 
 # --- A CORREÇÃO FINAL ESTÁ AQUI ---
-# Copia o Schema E o Cliente Gerado do Estágio 1
+# Copia o Schema E o Cliente Gerado (MAS NÃO O .env)
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 
