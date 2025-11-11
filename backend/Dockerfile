@@ -1,31 +1,32 @@
-# ---- Estágio 1: Build (Instala deps) ----
+# ---- Estágio 1: Build ----
 FROM node:20-alpine AS build
 WORKDIR /app
+
+# Copia dependências e instala
 COPY package*.json ./
-# Instala TODAS as dependências
 RUN npm install
+
+# Copia código-fonte e schema do Prisma
 COPY . .
 
-# --- CORREÇÃO ESTÁ AQUI ---
-# 1. Aceita o DATABASE_URL como um argumento de build
+# Gera Prisma Client no estágio de build
 ARG DATABASE_URL
-# 2. Expõe esse argumento como uma ENV *apenas* para o npx prisma generate
 ENV DATABASE_URL=$DATABASE_URL
-
-# Constrói o cliente Prisma baseado no schema.prisma
 RUN npx prisma generate
 
-# Se você usar TypeScript, descomente a linha abaixo:
-# RUN npm run build
-
-# ---- Estágio 2: Produção (Imagem final otimizada) ----
+# ---- Estágio 2: Produção ----
 FROM node:20-alpine
 WORKDIR /app
-COPY --from=build /app .
-# Instala SOMENTE dependências de produção
+
+# Copia tudo, inclusive node_modules e schema.prisma
+COPY --from=build /app . 
+
+# Instala apenas dependências de produção
 RUN npm ci --omit=dev
 
-# Expõe a porta 3001 (definida no .env)
+# 🚀 Garante que Prisma Client será gerado no runtime se necessário
+RUN echo '#!/bin/sh\nnpx prisma generate --schema=./prisma/schema.prisma && node src/server.js' > /start.sh \
+    && chmod +x /start.sh
+
 EXPOSE 3001
-# Comando para iniciar o servidor
-CMD [ "npm", "start" ]
+CMD ["/bin/sh", "/start.sh"]
