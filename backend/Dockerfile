@@ -1,32 +1,29 @@
-# ---- Estágio 1: Build ----
+# ---- Estágio 1: Build (O "Sujo") ----
 FROM node:20-alpine AS build
 WORKDIR /app
-
-# Copia dependências e instala
 COPY package*.json ./
 RUN npm install
-
-# Copia código-fonte e schema do Prisma
-COPY . .
-
-# Gera Prisma Client no estágio de build
+COPY . . 
 ARG DATABASE_URL
 ENV DATABASE_URL=$DATABASE_URL
 RUN npx prisma generate
 
-# ---- Estágio 2: Produção ----
+# ---- Estágio 2: Produção (O "Limpo") ----
 FROM node:20-alpine
 WORKDIR /app
 
-# Copia tudo, inclusive node_modules e schema.prisma
-COPY --from=build /app . 
-
-# Instala apenas dependências de produção
+COPY package*.json ./
 RUN npm ci --omit=dev
 
-# 🚀 Garante que Prisma Client será gerado no runtime se necessário
-RUN echo '#!/bin/sh\nnpx prisma generate --schema=./prisma/schema.prisma && node src/server.js' > /start.sh \
-    && chmod +x /start.sh
+# Copia o código-fonte
+COPY --from=build /app/src ./src
+COPY --from=build /app/.env ./
+COPY --from=build /app/package.json ./package.json
+
+# --- A CORREÇÃO FINAL ESTÁ AQUI ---
+# Copia o Schema E o Cliente Gerado do Estágio 1
+COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 
 EXPOSE 3001
-CMD ["/bin/sh", "/start.sh"]
+CMD [ "npm", "start" ]

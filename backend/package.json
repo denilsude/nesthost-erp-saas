@@ -4,10 +4,10 @@
   "version": "1.0.0",
   "description": "API do NestHost ERP",
   "main": "src/server.js",
-"scripts": {
-  "start": "npx prisma generate && node src/server.js",
-  "dev": "node src/server.js"
-}
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js"
+  },
   "dependencies": {
     "@prisma/client": "^6.19.0",
     "bcryptjs": "^3.0.3",
