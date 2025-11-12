@@ -1,8 +1,76 @@
+// Define o gerador de cliente
 generator client {
   provider = "prisma-client-js"
 }
 
+// Define a conexão com o banco de dados
 datasource db {
+  // --- REVERTIDO PARA PRODUÇÃO ---
+  // O servidor de produção (Ubuntu) usa 'postgresql'
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// --- Lógica Principal do Multi-Tenant ERP ---
+model Tenant {
+  id       Int       @id @default(autoincrement())
+  name     String
+  users    User[]
+  products Product[]
+  clients  Client[]
+  orders   Order[]
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  tenantId  Int
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  orders    Order[]
+}
+
+model Client {
+  id       Int      @id @default(autoincrement())
+  name     String
+  phone    String?
+  email    String?
+  tenantId Int
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  orders   Order[]
+}
+
+model Product {
+  id            Int             @id @default(autoincrement())
+  name          String
+  barcode       String?         @unique
+  price         Float
+  stock         Int             @default(0)
+  tenantId      Int
+  tenant        Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  OrderLineItem OrderLineItem[]
+}
+
+model Order {
+  id        Int             @id @default(autoincrement())
+  createdAt DateTime        @default(now())
+  total     Float
+  tenantId  Int
+  tenant    Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId    Int
+  user      User            @relation(fields: [userId], references: [id])
+  clientId  Int
+  client    Client          @relation(fields: [clientId], references: [id])
+  items     OrderLineItem[]
+}
+
+model OrderLineItem {
+  id        Int     @id @default(autoincrement())
+  quantity  Int
+  price     Float
+  orderId   Int
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
 }
