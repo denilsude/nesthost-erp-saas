@@ -6,10 +6,9 @@ services:
     image: postgres:15
     container_name: saas_postgres_db
     restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+    # O 'postgres-db' lê o .env automaticamente
+    env_file:
+      - ./.env
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -22,9 +21,6 @@ services:
   backend:
     build:
       context: ./backend
-      # --- CORREÇÃO ESTÁ AQUI ---
-      # Passa a variável ${DATABASE_URL} (lida do .env) 
-      # para dentro do build como um argumento (ARG)
       args:
         - DATABASE_URL=${DATABASE_URL}
     container_name: saas_backend_api
@@ -32,8 +28,12 @@ services:
     depends_on:
       postgres-db:
         condition: service_healthy
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
+    
+    # --- A CORREÇÃO ESTÁ AQUI ---
+    # Força a leitura do .env da raiz EM RUNTIME
+    env_file:
+      - ./.env
+
     ports:
       - "3001:3001"
 
