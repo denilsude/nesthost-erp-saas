@@ -1,62 +1,61 @@
-import { useMemo } from "react";
-import { Menubar } from "primereact/menubar";
-import { Card } from "primereact/card";
-import { Chart } from "primereact/chart";
+import React, { useState } from 'react';
 
-export default function App() {
-  const menuItems = useMemo(() => ([
-    { label: "Dashboard", icon: "pi pi-home" },
-    { label: "Clientes", icon: "pi pi-users" },
-    { label: "Ordens", icon: "pi pi-briefcase" },
-    { label: "Configurações", icon: "pi pi-cog" },
-  ]), []);
+// Importa o tema e os estilos principais do PrimeReact
+import "primereact/resources/themes/lara-light-indigo/theme.css";
+import "primereact/resources/primereact.min.css";
+import "primeicons/primeicons.css";
+import "primeflex/primeflex.css"; // Adiciona o PrimeFlex para layout
 
-  const chartData = useMemo(() => ({
-    labels: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun"],
-    datasets: [{
-      label: "Faturamento",
-      data: [1200, 1900, 3000, 2500, 4200, 4800],
-      backgroundColor: "rgba(54, 162, 235, 0.5)",
-      borderColor: "#36A2EB",
-      borderWidth: 2,
-    }]
-  }), []);
+// --- MUDANÇA AQUI ---
+// Importa a nova página que acabamos de criar
+import Products from './pages/Products';
+// (Vamos deixar o Dashboard antigo aqui por enquanto, caso precisemos)
+// import Dashboard from './pages/Dashboard'; 
 
-  const chartOptions = useMemo(() => ({
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { labels: { color: "#111827" } } },
-    scales: {
-      x: { ticks: { color: "#374151" }, grid: { color: "#e5e7eb" } },
-      y: { ticks: { color: "#374151" }, grid: { color: "#f3f4f6" } }
-    }
-  }), []);
+function App() {
+  // Estado simples para simular login.
+  // No futuro, isso virá do seu `useAuth` hook.
+  const [isLoggedIn, setIsLoggedIn] = useState(true); // <-- Mude para 'false' para ver a tela de login
 
-  return (
-    <div className="p-3" style={{ maxWidth: 1280, margin: "0 auto" }}>
-      <Menubar model={menuItems} start={<strong>NestHost ERP</strong>} />
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(12, 1fr)",
-        gap: "1rem",
-        marginTop: "1rem"
-      }}>
-        <Card title="Clientes Ativos" subTitle="Este mês" style={{ gridColumn: "span 4" }}>
-          <h2 style={{ margin: 0, fontSize: 32 }}>128</h2>
-        </Card>
-        <Card title="Ordens em aberto" subTitle="Hoje" style={{ gridColumn: "span 4" }}>
-          <h2 style={{ margin: 0, fontSize: 32 }}>23</h2>
-        </Card>
-        <Card title="Faturamento" subTitle="Últimos 30 dias" style={{ gridColumn: "span 4" }}>
-          <h2 style={{ margin: 0, fontSize: 32 }}>R$ 42.300</h2>
-        </Card>
-
-        <Card title="Desempenho Financeiro" style={{ gridColumn: "span 12", height: 360 }}>
-          <div style={{ position: "relative", height: "100%" }}>
-            <Chart type="bar" data={chartData} options={chartOptions} />
-          </div>
-        </Card>
+  // --- Tela de Login (Simples) ---
+  // (Vamos construir isso melhor depois)
+  if (!isLoggedIn) {
+    return (
+      <div className="flex align-items-center justify-content-center min-h-screen">
+        <div className="card p-5">
+          <h2 className="text-center mb-4">Login NestHost ERP</h2>
+          {/* O formulário de login virá aqui */}
+          <button onClick={() => setIsLoggedIn(true)}>Simular Login</button>
+        </div>
       </div>
+    );
+  }
+
+  // --- Área Principal do App (Dashboard/Telas) ---
+  // (No futuro, usaremos o React Router aqui para navegar entre
+  // Dashboard, Produtos, Clientes, etc.)
+  return (
+    <div className="p-4">
+      {/* Menu Superior (Simples) 
+        (No futuro, este será seu componente 'Layout' ou 'Navbar')
+      */}
+      <header className="mb-4 p-3 shadow-2 border-round">
+        <h1 className="m-0">NestHost ERP</h1>
+        <small>Bem-vindo, {`{usuário}`}!</small>
+      </header>
+
+      {/* Conteúdo Principal 
+        (Agora estamos exibindo a página de Produtos)
+      */}
+      <main>
+        {/* --- MUDANÇA AQUI --- */}
+        {/* Em vez de mostrar o Dashboard, mostramos o Gerenciador de Produtos */}
+        <Products />
+
+        {/* <Dashboard /> */}
+      </main>
     </div>
   );
 }
+
+export default App;
