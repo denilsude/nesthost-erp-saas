@@ -1,58 +1,82 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Importa o tema e os estilos principais do PrimeReact
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
-import "primeflex/primeflex.css"; // Adiciona o PrimeFlex para layout
+import "primeflex/primeflex.css";
 
 // --- MUDANÇA AQUI ---
-// Importa a nova página que acabamos de criar
+// Importa as duas páginas que criamos
 import Products from './pages/Products';
-// (Vamos deixar o Dashboard antigo aqui por enquanto, caso precisemos)
-// import Dashboard from './pages/Dashboard'; 
+import Login from './pages/Login';
 
 function App() {
-  // Estado simples para simular login.
-  // No futuro, isso virá do seu `useAuth` hook.
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // <-- Mude para 'false' para ver a tela de login
+  // --- MUDANÇA AQUI ---
+  // A "memória" do App agora guarda o token (crachá)
+  const [token, setToken] = useState(null);
 
-  // --- Tela de Login (Simples) ---
-  // (Vamos construir isso melhor depois)
-  if (!isLoggedIn) {
-    return (
-      <div className="flex align-items-center justify-content-center min-h-screen">
-        <div className="card p-5">
-          <h2 className="text-center mb-4">Login NestHost ERP</h2>
-          {/* O formulário de login virá aqui */}
-          <button onClick={() => setIsLoggedIn(true)}>Simular Login</button>
-        </div>
-      </div>
-    );
+  // --- Efeito: O que fazer quando o App carregar pela primeira vez ---
+  useEffect(() => {
+    // 1. Verifica se o "crachá" já está salvo no navegador
+    const storedToken = localStorage.getItem('token');
+    
+    if (storedToken) {
+      // 2. Se encontrou, define como o token atual
+      // (No futuro, vamos verificar se o token ainda é válido)
+      setToken(storedToken);
+    }
+  }, []); // O '[]' significa "rodar este comando apenas uma vez, quando o App carregar"
+
+  // --- Função: O que fazer quando o Login.jsx for bem-sucedido ---
+  const handleLoginSuccess = (newToken) => {
+    // 1. Salva o "crachá" no localStorage do navegador
+    localStorage.setItem('token', newToken);
+    // 2. Atualiza o estado do App, o que vai trocar a tela
+    setToken(newToken);
+  };
+
+  // --- Função: O que fazer quando clicar em "Sair" (Logout) ---
+  const handleLogout = () => {
+    // 1. Apaga o "crachá" do localStorage
+    localStorage.removeItem('token');
+    // 2. Limpa o estado, o que vai trocar a tela para Login
+    setToken(null);
+  };
+
+  // --- Renderização (O que aparece na tela) ---
+
+  // Se NÃO HÁ token (não está logado)...
+  if (!token) {
+    // Mostra a página de Login
+    // E passa para ela a função handleLoginSuccess
+    return <Login onLoginSuccess={handleLoginSuccess} />;
   }
 
-  // --- Área Principal do App (Dashboard/Telas) ---
-  // (No futuro, usaremos o React Router aqui para navegar entre
-  // Dashboard, Produtos, Clientes, etc.)
+  // Se HÁ um token (está logado)...
+  // Mostra a Área Principal do App
   return (
     <div className="p-4">
-      {/* Menu Superior (Simples) 
-        (No futuro, este será seu componente 'Layout' ou 'Navbar')
-      */}
-      <header className="mb-4 p-3 shadow-2 border-round">
-        <h1 className="m-0">NestHost ERP</h1>
-        <small>Bem-vindo, {`{usuário}`}!</small>
+      {/* Menu Superior */}
+      <header className="mb-4 p-3 shadow-2 border-round flex justify-content-between align-items-center">
+        <div>
+          <h1 className="m-0">NestHost ERP</h1>
+          <small>Bem-vindo!</small>
+        </div>
+        {/* --- MUDANÇA AQUI --- Botão de Sair */}
+        <button 
+          onClick={handleLogout} 
+          className="p-button p-button-danger p-button-outlined"
+        >
+          <i className="pi pi-sign-out mr-2"></i>
+          Sair
+        </button>
       </header>
 
-      {/* Conteúdo Principal 
-        (Agora estamos exibindo a página de Produtos)
-      */}
+      {/* Conteúdo Principal */}
       <main>
-        {/* --- MUDANÇA AQUI --- */}
-        {/* Em vez de mostrar o Dashboard, mostramos o Gerenciador de Produtos */}
+        {/* Agora que estamos logados, mostramos a página de Produtos */}
         <Products />
-
-        {/* <Dashboard /> */}
       </main>
     </div>
   );
