@@ -1,36 +1,38 @@
-name: Deploy SaaS (api, app, wildcard)
+name: Deploy SaaS (api, app)
 
 on:
   push:
     branches:
-      - main # Garante que o deploy só rode em pushs para a 'main'
+      - main # Dispara toda vez que houver um push na 'main'
+    paths:
+      # Só dispara se houver mudanças no backend, frontend ou nos scripts
+      - 'backend/**'
+      - 'frontend/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/deploy-saas.yml' # <-- Corrigido para o nome do seu arquivo
 
 jobs:
-  build-and-deploy:
-    runs-on: self-hosted # Usa o nosso runner 'pentecost'
-    
-    # Injeta os segredos do GitHub no ambiente do runner
-    env:
-      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  deploy:
+    runs-on: [self-hosted, pentecost] # Roda no nosso runner 'pentecost'
 
     steps:
       - name: 1. Baixar o código (Checkout)
+        # Este checkout é apenas para o runner "saber" que o job existe
         uses: actions/checkout@v4
 
-      - name: 2. Garantir que estamos no diretório correto
-        run: cd $GITHUB_WORKSPACE 
-
-      - name: 3. Parar containers antigos (se existirem)
-        run: docker compose down
-
-      - name: 4. Construir e Iniciar novos containers
-        run: docker compose up --build -d
-
-      - name: 5. Limpar Imagens Antigas
-        run: docker image prune -f
-
-      - name: 6. Fim do Deploy
-        run: echo "Deploy do SaaS concluído!"
+      - name: 2. Deploy no Servidor (Git Pull e Docker Compose)
+        # Este é o script de deploy CORRETO
+        run: |
+          echo "1. Acessando o diretório de produção..."
+          cd ~/nesthost-erp-saas
+          
+          echo "2. Puxando o código mais recente do GitHub..."
+          git pull origin main
+          
+          echo "3. Reconstruindo e reiniciando os containers (lendo o .env da raiz)..."
+          # O '--build' só reconstrói o que mudou
+          # O '-d' (detached) roda em segundo plano
+          docker compose up -d --build
+          
+          echo "4. Limpando imagens Docker antigas..."
+          docker image prune -f
