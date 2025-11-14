@@ -9,7 +9,7 @@ on:
       - 'backend/**'
       - 'frontend/**'
       - 'docker-compose.yml'
-      - '.github/workflows/deploy-saas.yml' # <-- Corrigido para o nome do seu arquivo
+      - '.github/workflows/deploy-saas.yml' # <-- Nome do arquivo correto
 
 jobs:
   deploy:
